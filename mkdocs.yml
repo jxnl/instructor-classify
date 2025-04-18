@@ -1,0 +1,84 @@
+site_name: Instructor Classify
+site_description: A fluent, type-safe API for text classification with LLMs
+site_author: Jason Liu 
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+repo_name: jxnl/instructor-classify
+repo_url: https://github.com/jxnl/instructor-classify
+
+nav:
+  - Home: 
+    - 'Home': index.md
+    - Installation: installation.md
+    - Getting Started: usage/getting-started.md
+    - Avoiding YAML: usage/programmatic-definition.md
+    - Examples: usage/examples.md
+    - Contributing: contributing.md
+  - Evaluation Framework: usage/evaluation.md
+  - API Reference: api.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jxnl/instructor-classify
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/instructor-classify/
+
+plugins:
+  - search

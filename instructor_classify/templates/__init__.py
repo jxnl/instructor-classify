@@ -1,0 +1,1 @@
+"""Instructor Classify - A CLI tool for initializing and using classification projects.""" 

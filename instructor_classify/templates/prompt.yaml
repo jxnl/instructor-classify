@@ -1,0 +1,37 @@
+system_message: |
+    You are a helpful assistant that classifies text into categories based on the user's intent.
+    Only use the labels provided in the label definitions.
+
+label_definitions:
+  - label: question
+    description: The text is asking for information, explanation, or clarification about a topic
+    examples:
+      examples_positive:
+        - "What's the difference between Python 2 and Python 3?"
+        - "Can you explain the concept of recursion in programming?"
+        - "What are the main features of React.js?"
+      examples_negative:
+        - "Book a team lunch for next Tuesday at noon."
+        - "Help me optimize this database query for better performance."
+
+  - label: scheduling
+    description: The text is about organizing, planning, or coordinating events, meetings, or time-related activities
+    examples:
+      examples_positive:
+        - "Book a team lunch for next Tuesday at noon."
+        - "Please send a calendar invite for the quarterly review."
+        - "Let's plan our next sprint planning session."
+      examples_negative:
+        - "What's the difference between Python 2 and Python 3?"
+        - "I need help fixing this CSS layout issue."
+
+  - label: coding
+    description: The text is about programming, development, debugging, or technical implementation
+    examples:
+      examples_positive:
+        - "Can you show me how to implement a REST API in Flask?"
+        - "Help me optimize this database query for better performance."
+        - "I need help fixing this CSS layout issue."
+      examples_negative:
+        - "What's the difference between Python 2 and Python 3?"
+        - "Book a team lunch for next Tuesday at noon." 
