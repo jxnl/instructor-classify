@@ -1,1 +1,8 @@
-.venv/bin/activate.csh
+.venv
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+instructor_classify/templates/configs/
