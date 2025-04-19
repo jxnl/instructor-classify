@@ -3,13 +3,16 @@ from pathlib import Path
 import shutil
 import sys
 import os
+import tempfile
+import yaml
 
 # Add parent directory to path for imports
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.eval_harness.unified_eval import UnifiedEvaluator
+from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
+from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig
 
 app = typer.Typer(name="instruct-classify")
 
@@ -63,60 +66,64 @@ def evaluate(
         help="Number of parallel jobs to run (default: 4)",
         min=1,
         max=32,
+    ),
+    use_cache: bool = typer.Option(
+        None,
+        "--cache/--no-cache",
+        help="Enable or disable caching (default: from config or True)",
     )
 ):
     """Run evaluation using the unified evaluation framework."""
     try:
-        import yaml
-        import tempfile
-        import os as os_module  # Import with a different name to avoid shadowing
+        # If CLI options are provided, create temporary config with overrides
+        config_to_use = config_path
+        temp_config_path = None
         
-        # If CLI options are provided, update the config file
-        if parallel_mode is not None or n_jobs is not None:
-            # Load existing config
-            with open(config_path) as f:
-                config = yaml.safe_load(f)
+        if any(option is not None for option in [parallel_mode, n_jobs, use_cache]):
+            # Load original config through the EvaluationConfig class for validation
+            original_config = EvaluationConfig.from_file(config_path)
             
-            # Update with CLI options
+            # Create a dict with only the overrides that are specified
+            overrides = {}
             if parallel_mode is not None:
-                config["parallel_mode"] = parallel_mode
+                overrides["parallel_mode"] = parallel_mode
             if n_jobs is not None:
-                config["n_jobs"] = n_jobs
+                overrides["n_jobs"] = n_jobs  
+            if use_cache is not None:
+                overrides["use_cache"] = use_cache
+                
+            # Apply overrides
+            updated_config = original_config.create_with_overrides(**overrides)
             
-            # Fix paths to be absolute before writing to a new location
-            config_dir = os_module.path.dirname(os_module.path.abspath(config_path))
-            
-            # Convert relative paths to absolute paths
-            if "definition_path" in config and not os_module.path.isabs(config["definition_path"]):
-                config["definition_path"] = os_module.path.normpath(os_module.path.join(config_dir, config["definition_path"]))
-            
-            if "eval_sets" in config:
-                for i, eval_set in enumerate(config["eval_sets"]):
-                    if not os_module.path.isabs(eval_set):
-                        config["eval_sets"][i] = os_module.path.normpath(os_module.path.join(config_dir, eval_set))
-            
-            # Create a temporary config file
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as temp:
-                yaml.dump(config, temp)
-                temp_config_path = temp.name
-            
-            # Use the updated config
+            # Create temporary config file
+            temp_config_path = updated_config.create_temp_file()
             config_to_use = temp_config_path
-            typer.echo(f"Using configuration with CLI overrides: parallel_mode={parallel_mode}, n_jobs={n_jobs}")
-        else:
-            # Use the original config
-            config_to_use = config_path
+            
+            # Show override info
+            override_msg_parts = []
+            if parallel_mode is not None:
+                override_msg_parts.append(f"parallel_mode={parallel_mode}")
+            if n_jobs is not None:
+                override_msg_parts.append(f"n_jobs={n_jobs}")
+            if use_cache is not None:
+                override_msg_parts.append(f"cache={'enabled' if use_cache else 'disabled'}")
+                
+            typer.echo(f"Using configuration with CLI overrides: {', '.join(override_msg_parts)}")
         
         # Initialize and run evaluator
-        evaluator = UnifiedEvaluator(config_to_use)
-        evaluator.prepare()
-        evaluator.run()
+        evaluator = EvaluationOrchestrator(config_to_use)
+        success = evaluator.execute()
         
         # Clean up temporary file if created
-        if parallel_mode is not None or n_jobs is not None:
-            os_module.unlink(temp_config_path)
+        if temp_config_path:
+            os.unlink(temp_config_path)
             
-        typer.echo("\n[bold green]Evaluation completed successfully![/bold green]")
+        if success:
+            typer.echo("\n[bold green]Evaluation completed successfully![/bold green]")
+        else:
+            typer.echo("\n[bold red]Evaluation failed.[/bold red]")
+            raise typer.Exit(1)
+            
     except KeyboardInterrupt:
         typer.echo("\n[bold yellow]Evaluation cancelled by user.[/bold yellow]")
         raise typer.Exit(0)
@@ -127,4 +134,4 @@ def evaluate(
         raise typer.Exit(1)
 
 if __name__ == "__main__":
-    app() 
+    app()

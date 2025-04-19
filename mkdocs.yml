@@ -40,7 +40,9 @@ nav:
     - Avoiding YAML: usage/programmatic-definition.md
     - Examples: usage/examples.md
     - Contributing: contributing.md
-  - Evaluation Framework: usage/evaluation.md
+  - Evaluation Framework: 
+    - Overview: usage/evaluation.md
+    - Modular Architecture: usage/modular_evaluation.md
   - API Reference: api.md
 
 markdown_extensions:

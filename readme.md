@@ -28,6 +28,7 @@ Instructor Classify provides:
   - Confusion matrix analysis
   - Error pattern identification
   - Visualization generation
+  - Disk caching for resilience and cost savings
 - **CLI interface** for project initialization and evaluation
 
 ## Installation
@@ -127,16 +128,16 @@ Evaluate model performance across datasets:
 instruct-classify eval --config configs/example.yaml
 ```
 
-You can override parallelism settings with CLI flags:
+You can override parallelism settings and enable caching with CLI flags:
 ```bash
 # Use async mode with 8 workers
 instruct-classify eval --config configs/example.yaml --mode async --jobs 8
 
-# Use parallel (thread-based) mode with 4 workers
-instruct-classify eval --config configs/example.yaml --mode parallel --jobs 4
+# Use parallel (thread-based) mode with 4 workers and enable caching
+instruct-classify eval --config configs/example.yaml --mode parallel --jobs 4 --cache
 
-# Use sequential mode (no parallelism)
-instruct-classify eval --config configs/example.yaml --mode sync
+# Use sequential mode (no parallelism) with caching disabled
+instruct-classify eval --config configs/example.yaml --mode sync --no-cache
 ```
 
 Configuration file:
@@ -158,6 +159,34 @@ confidence_level: 0.95
 # Parallelism settings
 parallel_mode: "parallel"  # Options: sync, parallel, async
 n_jobs: 4                  # Number of parallel workers
+
+# Caching configuration
+use_cache: true
+cache_dir: ".eval_cache"
+```
+
+### Modular Evaluation System
+
+The new modular evaluation system provides:
+
+- **Pipeline architecture** for extensible, customizable evaluation
+- **Processing strategies** for different parallelism modes (sync, parallel, async)
+- **Disk-based caching** for resilience and cost savings
+- **Pluggable analyzers** for custom metrics and analysis
+- **Flexible reporting** options for both console and file output
+
+```python
+from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
+
+# Run evaluation with the modular system
+orchestrator = EvaluationOrchestrator("configs/example.yaml")
+success = orchestrator.execute()
+
+# Access results programmatically
+results = orchestrator.get_results()
+for model, model_results in results.items():
+    for eval_set, result in model_results.items():
+        print(f"{model} on {eval_set}: {result.accuracy:.2%}")
 ```
 
 The evaluation framework generates:
