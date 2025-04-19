@@ -5,10 +5,7 @@ This module provides the main orchestrator class that coordinates the evaluation
 process using the pipeline architecture.
 """
 
-from typing import Any, Dict, List, Optional
-from pathlib import Path
-import os
-import sys
+from typing import Any, Dict
 from rich.console import Console
 from rich.panel import Panel
 

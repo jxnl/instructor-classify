@@ -5,7 +5,6 @@ This module provides a persistent cache that stores data on disk,
 allowing for resilience against failures and resuming interrupted evaluations.
 """
 
-import os
 import json
 import hashlib
 import pickle

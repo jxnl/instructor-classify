@@ -5,7 +5,7 @@ This module provides the pipeline stage for analyzing evaluation results.
 """
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from instructor_classify.eval_harness.base import PipelineStage
 from instructor_classify.eval_harness.utils.analysis import (

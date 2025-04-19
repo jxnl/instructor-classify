@@ -11,7 +11,7 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.schema import EvalSet, ClassificationDefinition
+from instructor_classify.schema import ClassificationDefinition
 from instructor_classify.eval_harness.unified_eval import UnifiedEvaluator
 
 

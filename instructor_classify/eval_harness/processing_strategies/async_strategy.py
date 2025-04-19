@@ -6,7 +6,7 @@ examples concurrently using async/await.
 """
 
 import asyncio
-from typing import Any, Dict, List, TypeVar, Generic
+from typing import Any, Dict, List, TypeVar
 from tqdm.asyncio import tqdm
 from instructor_classify.eval_harness.base import ProcessingStrategy
 

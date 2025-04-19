@@ -4,8 +4,7 @@ Reporting pipeline stage.
 This module provides the pipeline stage for generating reports from evaluation results.
 """
 
-from typing import Any, Dict, List
-import os
+from typing import Any, Dict
 
 from instructor_classify.eval_harness.base import PipelineStage
 from instructor_classify.eval_harness.reporting import ConsoleReporter, FileReporter

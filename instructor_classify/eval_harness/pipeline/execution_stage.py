@@ -4,7 +4,7 @@ Execution pipeline stage.
 This module provides the pipeline stage for executing the evaluation.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 from rich.panel import Panel
 
 from instructor_classify.eval_harness.base import PipelineStage, EvaluationResult

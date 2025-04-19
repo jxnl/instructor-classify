@@ -7,15 +7,13 @@ define the architecture of the evaluation system.
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, TypeVar, Generic, Callable, Union, Type
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional, TypeVar, Generic
+from pydantic import BaseModel
 from rich.console import Console
 import os
 import yaml
 import json
-from pathlib import Path
 
-from instructor_classify.schema import ClassificationDefinition, EvalSet, EvalExample
 
 
 class EvaluationResult(BaseModel):

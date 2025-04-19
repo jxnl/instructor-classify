@@ -5,7 +5,7 @@ This module provides a thread-based parallel processing strategy for evaluating
 examples concurrently.
 """
 
-from typing import Any, Dict, List, TypeVar, Generic
+from typing import Any, Dict, List, TypeVar
 from concurrent.futures import ThreadPoolExecutor
 import tqdm
 from instructor_classify.eval_harness.base import ProcessingStrategy

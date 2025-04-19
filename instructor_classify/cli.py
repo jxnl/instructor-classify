@@ -3,8 +3,6 @@ from pathlib import Path
 import shutil
 import sys
 import os
-import tempfile
-import yaml
 
 # Add parent directory to path for imports
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

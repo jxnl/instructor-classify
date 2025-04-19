@@ -11,12 +11,10 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.schema import EvalSet, ClassificationDefinition
 from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
 from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig
-from instructor_classify.eval_harness.base import Pipeline
 from instructor_classify.eval_harness.pipeline import (
-    ConfigStage, LoadStage, ModelStage, ExecutionStage, AnalysisStage, ReportingStage
+    ConfigStage, LoadStage, ExecutionStage
 )
 from instructor_classify.eval_harness.processing_strategies import (
     SyncProcessingStrategy, ParallelProcessingStrategy, AsyncProcessingStrategy

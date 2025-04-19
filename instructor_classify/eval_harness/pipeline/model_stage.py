@@ -4,7 +4,7 @@ Model initialization pipeline stage.
 This module provides the pipeline stage for initializing classifier models.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 import instructor
 from openai import OpenAI, AsyncOpenAI
 

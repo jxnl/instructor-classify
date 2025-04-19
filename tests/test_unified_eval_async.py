@@ -4,7 +4,7 @@ import yaml
 import tempfile
 import pytest
 import asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 
 # Add parent directory to path
 current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -7,7 +7,7 @@ and evaluation sets.
 
 import os
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict
 from rich.panel import Panel
 
 from instructor_classify.eval_harness.base import PipelineStage

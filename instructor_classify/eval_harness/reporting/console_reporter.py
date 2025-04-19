@@ -4,12 +4,8 @@ Console reporter for evaluation results.
 This module provides rich console output for evaluation results.
 """
 
-from typing import Any, Dict, List
-from rich.console import Console
+from typing import Any, Dict
 from rich.table import Table
-from rich.panel import Panel
-from rich.text import Text
-from datetime import datetime
 
 from instructor_classify.eval_harness.base import Reporter, EvaluationResult
 
@@ -215,7 +211,7 @@ class ConsoleReporter(Reporter):
             # For now, we just show that analysis was performed
             # The actual display is handled by the analyzer's display_results method
             # which has already been called during the analysis phase
-            self.console.print(f"Analysis completed. Results available in output directory.")
+            self.console.print("Analysis completed. Results available in output directory.")
     
     def _display_final_recommendation(self, eval_results: Dict[str, Dict[str, EvaluationResult]], 
                                      analysis_results: Dict[str, Dict[str, Dict[str, Any]]]) -> None:

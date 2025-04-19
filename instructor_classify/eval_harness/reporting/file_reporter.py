@@ -4,9 +4,8 @@ File reporter for evaluation results.
 This module provides file-based output for evaluation results.
 """
 
-import os
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict
 from datetime import datetime
 from pathlib import Path
 

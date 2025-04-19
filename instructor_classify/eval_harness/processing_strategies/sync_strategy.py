@@ -5,7 +5,7 @@ This module provides a sequential processing strategy for evaluating examples
 without any parallelism.
 """
 
-from typing import Any, Dict, List, TypeVar, Generic
+from typing import Any, Dict, List, TypeVar
 from rich.progress import Progress
 from instructor_classify.eval_harness.base import ProcessingStrategy
 
@@ -43,7 +43,7 @@ class SyncProcessingStrategy(ProcessingStrategy[T, P, R]):
         
         with Progress() as progress:
             task = progress.add_task(
-                f"Classifying sequentially", total=len(examples)
+                "Classifying sequentially", total=len(examples)
             )
             
             for example in examples:
