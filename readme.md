@@ -1,5 +1,7 @@
 # Instructor Classify
 
+[![Run Tests](https://github.com/jxnl/instructor-classify/actions/workflows/run-tests.yml/badge.svg)](https://github.com/jxnl/instructor-classify/actions/workflows/run-tests.yml)
+
 A **fluent, type-safe API** for text classification built on top of [Instructor](https://github.com/jxnl/instructor/) with support for multiple LLM providers.
 
 > Both synchronous and asynchronous APIs are fully supported with comprehensive evaluation tools.

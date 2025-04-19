@@ -1,0 +1,52 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        uv venv
+        uv pip install --system -r requirements.txt
+        uv pip install --system -r requirements-dev.txt
+    
+    - name: Lint with ruff
+      run: |
+        # Check format and lint with ruff
+        uv run ruff check .
+        uv run ruff format --check .
+    
+    - name: Type check with mypy
+      run: |
+        uv run mypy instructor_classify
+    
+    - name: Test with pytest
+      run: |
+        uv run pytest --cov=instructor_classify
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: false
