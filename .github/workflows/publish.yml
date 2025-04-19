@@ -28,7 +28,9 @@ jobs:
       - name: Set up Python
         run: uv python install 3.10
       - name: Install the project
-        run: uv sync --all-extras
+        run: |
+          uv venv
+          uv sync --system --all-extras
       - name: Build the project
         run: uv build
       - name: Build and publish Python package

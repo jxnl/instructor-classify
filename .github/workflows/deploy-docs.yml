@@ -27,9 +27,10 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv pip install -r requirements.txt
-          uv pip install -r requirements-dev.txt
-          uv pip install mkdocs-material
+          uv venv
+          uv pip install --system -r requirements.txt
+          uv pip install --system -r requirements-dev.txt
+          uv pip install --system mkdocs-material
       
       - name: Build and deploy documentation
         run: mkdocs gh-deploy --force
