@@ -12,8 +12,8 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.schema import ClassificationDefinition
-from instructor_classify.eval_harness.unified_eval import UnifiedEvaluator
+from instructor_classify.schema import ClassificationDefinition  # noqa: E402
+from instructor_classify.eval_harness.unified_eval import UnifiedEvaluator  # noqa: E402
 
 
 @pytest.fixture

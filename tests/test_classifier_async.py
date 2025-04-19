@@ -17,8 +17,8 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # Local imports after path adjustment
-from instructor_classify.templates import AsyncClassifier  # type: ignore
-from instructor_classify.schema import ClassificationDefinition  # type: ignore
+from instructor_classify.templates import AsyncClassifier  # type: ignore  # noqa: E402
+from instructor_classify.schema import ClassificationDefinition  # type: ignore  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

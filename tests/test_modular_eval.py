@@ -11,15 +11,15 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
-from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig
-from instructor_classify.eval_harness.pipeline import (
+from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator  # noqa: E402
+from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig  # noqa: E402
+from instructor_classify.eval_harness.pipeline import (  # noqa: E402
     ConfigStage, LoadStage, ExecutionStage
 )
-from instructor_classify.eval_harness.processing_strategies import (
+from instructor_classify.eval_harness.processing_strategies import (  # noqa: E402
     SyncProcessingStrategy, ParallelProcessingStrategy, AsyncProcessingStrategy
 )
-from instructor_classify.eval_harness.caching import DiskCache
+from instructor_classify.eval_harness.caching import DiskCache  # noqa: E402
 
 
 @pytest.fixture

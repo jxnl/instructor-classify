@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import instructor
 import asyncio
 import multiprocessing
+from openai.types.chat import ChatCompletionMessageParam
 
 # ------------------------------------------------------------------
 # Optional progress bar support (requires ``tqdm``)

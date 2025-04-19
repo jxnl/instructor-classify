@@ -28,12 +28,13 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.schema import ClassificationDefinition, EvalSet
-from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
+# These imports need to come after the sys.path modification
+from instructor_classify.schema import ClassificationDefinition, EvalSet  # noqa: E402
+from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator  # noqa: E402
 
 # Import local utilities
-from instructor_classify.eval_harness.utils.analysis import BootstrapAnalyzer, CostLatencyAnalyzer, ConfusionAnalyzer
-from instructor_classify.eval_harness.base import EvaluationResult
+from instructor_classify.eval_harness.utils.analysis import BootstrapAnalyzer, CostLatencyAnalyzer, ConfusionAnalyzer  # noqa: E402
+from instructor_classify.eval_harness.base import EvaluationResult  # noqa: E402
 
 
 # This class is maintained for backward compatibility

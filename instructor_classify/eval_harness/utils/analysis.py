@@ -796,8 +796,8 @@ class ConfusionAnalyzer:
         if not confusion_analysis:
             return
 
-        labels = confusion_analysis["labels"]
-        cm = confusion_analysis["confusion_matrix"]
+        confusion_analysis["labels"]
+        confusion_analysis["confusion_matrix"]
         confused_pairs = confusion_analysis["confused_pairs"]
         confusion_examples = confusion_analysis["confusion_examples"]
         error_patterns = confusion_analysis["error_patterns"]

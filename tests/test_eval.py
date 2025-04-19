@@ -8,8 +8,8 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from instructor_classify.schema import EvalSet, ClassificationDefinition
-from instructor_classify.eval_harness.unified_eval import evaluate_classifier, display_evaluation_results
+from instructor_classify.schema import EvalSet, ClassificationDefinition  # noqa: E402
+from instructor_classify.eval_harness.unified_eval import evaluate_classifier, display_evaluation_results  # noqa: E402
 
 
 class MockResponse(BaseModel):

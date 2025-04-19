@@ -54,12 +54,9 @@ class EvaluationOrchestrator:
         pipeline = Pipeline()
         
         # Create and add common analyzers that are used by multiple stages
-        cost_analyzer = CostLatencyAnalyzer()
+        CostLatencyAnalyzer()
         
         # Set up context with common analyzers
-        initial_context = {
-            "cost_analyzer": cost_analyzer
-        }
         
         # Add pipeline stages
         pipeline.add_stage(ConfigStage(self.config_path))

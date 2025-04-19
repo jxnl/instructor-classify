@@ -8,9 +8,11 @@ import os
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
-
-from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator
-from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig
+    
+# These imports need to come after the sys.path modification
+# but ruff will still raise E402 warnings, so we use noqa
+from instructor_classify.eval_harness.orchestrator import EvaluationOrchestrator  # noqa: E402
+from instructor_classify.eval_harness.config.evaluation_config import EvaluationConfig  # noqa: E402
 
 app = typer.Typer(name="instruct-classify")
 
