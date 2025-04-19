@@ -31,7 +31,6 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-import instructor
 from openai import OpenAI
 from instructor_classify.schema import ClassificationDefinition, EvalSet
 
@@ -459,6 +458,8 @@ class UnifiedEvaluator:
             self.results_by_model[model_name] = {}
 
             # Initialize OpenAI client with Instructor
+            import instructor
+            from openai import OpenAI
             client = instructor.from_openai(OpenAI())
 
             # Create appropriate classifier
