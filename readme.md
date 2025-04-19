@@ -182,4 +182,5 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## Good first Issue:
 
-- [ ] Enable Pytest Examples 
+- [ ] Enable Pytest Examples to print outputs into the markdown
+- [ ] Cost tracking only works for openai, it does not use the instructor usage tracking standard, 
