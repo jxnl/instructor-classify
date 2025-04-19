@@ -59,13 +59,21 @@ def test_cli_eval_default(mock_evaluator, mock_config_file):
 
 
 @patch("instructor_classify.cli.UnifiedEvaluator")
-def test_cli_eval_with_mode_override(mock_evaluator, mock_config_file):
+@patch("instructor_classify.cli.os_module", autospec=True)
+def test_cli_eval_with_mode_override(mock_os, mock_evaluator, mock_config_file):
     """Test CLI eval command with mode override."""
     runner = CliRunner()
     
     # Set up mocks
     mock_instance = MagicMock()
     mock_evaluator.return_value = mock_instance
+    
+    # Mock os.path methods
+    mock_os.path.dirname.return_value = "/fake/directory"
+    mock_os.path.abspath.return_value = "/fake/absolute/path/to/config.yaml"
+    mock_os.path.isabs.return_value = False
+    mock_os.path.join.return_value = "/fake/directory/some_file.yaml"
+    mock_os.path.normpath.return_value = "/fake/directory/some_file_normalized.yaml"
     
     result = runner.invoke(app, ["eval", "--config", mock_config_file, "--mode", "parallel"])
     
@@ -84,16 +92,28 @@ def test_cli_eval_with_mode_override(mock_evaluator, mock_config_file):
     # We can't check the temp file directly as it's already deleted,
     # but we can verify through the output
     assert "CLI overrides: parallel_mode=parallel" in result.stdout
+    
+    # Verify the os module was used for path operations
+    mock_os.path.dirname.assert_called()
+    mock_os.path.abspath.assert_called()
 
 
 @patch("instructor_classify.cli.UnifiedEvaluator")
-def test_cli_eval_with_jobs_override(mock_evaluator, mock_config_file):
+@patch("instructor_classify.cli.os_module", autospec=True)
+def test_cli_eval_with_jobs_override(mock_os, mock_evaluator, mock_config_file):
     """Test CLI eval command with jobs override."""
     runner = CliRunner()
     
     # Set up mocks
     mock_instance = MagicMock()
     mock_evaluator.return_value = mock_instance
+    
+    # Mock os.path methods
+    mock_os.path.dirname.return_value = "/fake/directory"
+    mock_os.path.abspath.return_value = "/fake/absolute/path/to/config.yaml"
+    mock_os.path.isabs.return_value = False
+    mock_os.path.join.return_value = "/fake/directory/some_file.yaml"
+    mock_os.path.normpath.return_value = "/fake/directory/some_file_normalized.yaml"
     
     result = runner.invoke(app, ["eval", "--config", mock_config_file, "--jobs", "8"])
     
@@ -107,16 +127,28 @@ def test_cli_eval_with_jobs_override(mock_evaluator, mock_config_file):
     # Check the temporary file had the jobs setting updated
     assert "CLI overrides" in result.stdout
     assert "n_jobs=8" in result.stdout
+    
+    # Verify the os module was used for path operations
+    mock_os.path.dirname.assert_called()
+    mock_os.path.abspath.assert_called()
 
 
 @patch("instructor_classify.cli.UnifiedEvaluator")
-def test_cli_eval_with_both_overrides(mock_evaluator, mock_config_file):
+@patch("instructor_classify.cli.os_module", autospec=True)
+def test_cli_eval_with_both_overrides(mock_os, mock_evaluator, mock_config_file):
     """Test CLI eval command with both mode and jobs overrides."""
     runner = CliRunner()
     
     # Set up mocks
     mock_instance = MagicMock()
     mock_evaluator.return_value = mock_instance
+    
+    # Mock os.path methods
+    mock_os.path.dirname.return_value = "/fake/directory"
+    mock_os.path.abspath.return_value = "/fake/absolute/path/to/config.yaml"
+    mock_os.path.isabs.return_value = False
+    mock_os.path.join.return_value = "/fake/directory/some_file.yaml"
+    mock_os.path.normpath.return_value = "/fake/directory/some_file_normalized.yaml"
     
     result = runner.invoke(app, [
         "eval", 
@@ -132,16 +164,28 @@ def test_cli_eval_with_both_overrides(mock_evaluator, mock_config_file):
     assert "CLI overrides" in result.stdout
     assert "parallel_mode=async" in result.stdout
     assert "n_jobs=4" in result.stdout
+    
+    # Verify the os module was used for path operations
+    mock_os.path.dirname.assert_called()
+    mock_os.path.abspath.assert_called()
 
 
 @patch("instructor_classify.cli.UnifiedEvaluator")
-def test_cli_eval_with_invalid_mode(mock_evaluator, mock_config_file):
+@patch("instructor_classify.cli.os_module", autospec=True)
+def test_cli_eval_with_invalid_mode(mock_os, mock_evaluator, mock_config_file):
     """Test CLI eval command with invalid mode."""
     runner = CliRunner()
     
     # Set up mocks
     mock_instance = MagicMock()
     mock_evaluator.return_value = mock_instance
+    
+    # Mock os.path methods
+    mock_os.path.dirname.return_value = "/fake/directory"
+    mock_os.path.abspath.return_value = "/fake/absolute/path/to/config.yaml"
+    mock_os.path.isabs.return_value = False
+    mock_os.path.join.return_value = "/fake/directory/some_file.yaml"
+    mock_os.path.normpath.return_value = "/fake/directory/some_file_normalized.yaml"
     
     result = runner.invoke(app, [
         "eval", 
@@ -154,6 +198,10 @@ def test_cli_eval_with_invalid_mode(mock_evaluator, mock_config_file):
     
     # Verify evaluator was called
     mock_evaluator.assert_called_once()
+    
+    # Verify the os module was used for path operations
+    mock_os.path.dirname.assert_called()
+    mock_os.path.abspath.assert_called()
 
 
 def test_cli_init():

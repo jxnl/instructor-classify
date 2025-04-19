@@ -68,6 +68,8 @@ def evaluate(
     """Run evaluation using the unified evaluation framework."""
     try:
         import yaml
+        import tempfile
+        import os as os_module  # Import with a different name to avoid shadowing
         
         # If CLI options are provided, update the config file
         if parallel_mode is not None or n_jobs is not None:
@@ -82,19 +84,18 @@ def evaluate(
                 config["n_jobs"] = n_jobs
             
             # Fix paths to be absolute before writing to a new location
-            config_dir = os.path.dirname(os.path.abspath(config_path))
+            config_dir = os_module.path.dirname(os_module.path.abspath(config_path))
             
             # Convert relative paths to absolute paths
-            if "definition_path" in config and not os.path.isabs(config["definition_path"]):
-                config["definition_path"] = os.path.normpath(os.path.join(config_dir, config["definition_path"]))
+            if "definition_path" in config and not os_module.path.isabs(config["definition_path"]):
+                config["definition_path"] = os_module.path.normpath(os_module.path.join(config_dir, config["definition_path"]))
             
             if "eval_sets" in config:
                 for i, eval_set in enumerate(config["eval_sets"]):
-                    if not os.path.isabs(eval_set):
-                        config["eval_sets"][i] = os.path.normpath(os.path.join(config_dir, eval_set))
+                    if not os_module.path.isabs(eval_set):
+                        config["eval_sets"][i] = os_module.path.normpath(os_module.path.join(config_dir, eval_set))
             
             # Create a temporary config file
-            import tempfile
             with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as temp:
                 yaml.dump(config, temp)
                 temp_config_path = temp.name
@@ -113,8 +114,7 @@ def evaluate(
         
         # Clean up temporary file if created
         if parallel_mode is not None or n_jobs is not None:
-            import os
-            os.unlink(temp_config_path)
+            os_module.unlink(temp_config_path)
             
         typer.echo("\n[bold green]Evaluation completed successfully![/bold green]")
     except KeyboardInterrupt:
