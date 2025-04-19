@@ -127,6 +127,18 @@ Evaluate model performance across datasets:
 instruct-classify eval --config configs/example.yaml
 ```
 
+You can override parallelism settings with CLI flags:
+```bash
+# Use async mode with 8 workers
+instruct-classify eval --config configs/example.yaml --mode async --jobs 8
+
+# Use parallel (thread-based) mode with 4 workers
+instruct-classify eval --config configs/example.yaml --mode parallel --jobs 4
+
+# Use sequential mode (no parallelism)
+instruct-classify eval --config configs/example.yaml --mode sync
+```
+
 Configuration file:
 ```yaml
 # Models to evaluate
@@ -142,6 +154,10 @@ eval_sets:
 # Analysis parameters
 bootstrap_samples: 1000
 confidence_level: 0.95
+
+# Parallelism settings
+parallel_mode: "parallel"  # Options: sync, parallel, async
+n_jobs: 4                  # Number of parallel workers
 ```
 
 The evaluation framework generates:

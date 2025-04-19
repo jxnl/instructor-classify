@@ -49,14 +49,61 @@ def evaluate(
         file_okay=True,
         dir_okay=False,
         readable=True,
+    ),
+    parallel_mode: str = typer.Option(
+        None,
+        "--mode",
+        "-m",
+        help="Parallelism mode: 'sync' (sequential), 'parallel' (thread-based), or 'async' (asyncio-based)",
+    ),
+    n_jobs: int = typer.Option(
+        None,
+        "--jobs",
+        "-j",
+        help="Number of parallel jobs to run (default: 4)",
+        min=1,
+        max=32,
     )
 ):
     """Run evaluation using the unified evaluation framework."""
     try:
+        import yaml
+        
+        # If CLI options are provided, update the config file
+        if parallel_mode is not None or n_jobs is not None:
+            # Load existing config
+            with open(config_path) as f:
+                config = yaml.safe_load(f)
+            
+            # Update with CLI options
+            if parallel_mode is not None:
+                config["parallel_mode"] = parallel_mode
+            if n_jobs is not None:
+                config["n_jobs"] = n_jobs
+                
+            # Create a temporary config file
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as temp:
+                yaml.dump(config, temp)
+                temp_config_path = temp.name
+            
+            # Use the updated config
+            config_to_use = temp_config_path
+            typer.echo(f"Using configuration with CLI overrides: parallel_mode={parallel_mode}, n_jobs={n_jobs}")
+        else:
+            # Use the original config
+            config_to_use = config_path
+        
         # Initialize and run evaluator
-        evaluator = UnifiedEvaluator(config_path)
+        evaluator = UnifiedEvaluator(config_to_use)
         evaluator.prepare()
         evaluator.run()
+        
+        # Clean up temporary file if created
+        if parallel_mode is not None or n_jobs is not None:
+            import os
+            os.unlink(temp_config_path)
+            
         typer.echo("\n[bold green]Evaluation completed successfully![/bold green]")
     except KeyboardInterrupt:
         typer.echo("\n[bold yellow]Evaluation cancelled by user.[/bold yellow]")

@@ -225,6 +225,18 @@ class UnifiedEvaluator:
         )
         self.confusion_analyzer = ConfusionAnalyzer()
 
+        # Set up parallelism configuration
+        self.parallel_mode = self.config.get("parallel_mode", "sync")  # Options: sync, parallel, async
+        self.n_jobs = self.config.get("n_jobs", 4)
+        
+        if self.parallel_mode not in ["sync", "parallel", "async"]:
+            self.console.print(
+                f"[yellow]Warning: Invalid parallel_mode '{self.parallel_mode}', defaulting to 'sync'[/yellow]"
+            )
+            self.parallel_mode = "sync"
+            
+        self.console.print(f"[green]Using {self.parallel_mode} mode with {self.n_jobs} workers[/green]")
+
         # Generate timestamp for this evaluation run
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -306,6 +318,80 @@ class UnifiedEvaluator:
             f"[green]Prepared {len(self.models)} models and {len(self.evaluation_sets)} evaluation sets[/green]"
         )
 
+    def _process_single_example(self, classifier, example, is_multi=False):
+        """Process a single example with appropriate prediction method and timing."""
+        if is_multi:
+            prediction = classifier.predict_multi(example.text)
+            is_correct = set(prediction.labels) == set(example.expected_labels)
+            expected = example.expected_labels
+            predicted = prediction.labels
+        else:
+            prediction = classifier.predict(example.text)
+            is_correct = prediction.label == example.expected_label
+            expected = example.expected_label
+            predicted = prediction.label
+            
+        return {
+            "prediction": prediction,
+            "is_correct": is_correct,
+            "text": example.text,
+            "expected": expected,
+            "predicted": predicted
+        }
+        
+    def _process_batch_parallel(self, classifier, examples, is_multi=False):
+        """Process a batch of examples using thread-based parallelism."""
+        from concurrent.futures import ThreadPoolExecutor
+        import tqdm
+        
+        results = []
+        with ThreadPoolExecutor(max_workers=self.n_jobs) as executor:
+            futures = [
+                executor.submit(self._process_single_example, classifier, example, is_multi)
+                for example in examples
+            ]
+            
+            for future in tqdm.tqdm(
+                futures, total=len(futures), desc="Classifying", leave=False
+            ):
+                results.append(future.result())
+                
+        return results
+        
+    async def _process_batch_async(self, classifier, examples, is_multi=False):
+        """Process a batch of examples using asyncio-based parallelism."""
+        import asyncio
+        from tqdm.asyncio import tqdm
+        
+        async def _process_async(example):
+            # Create async semaphore to limit concurrency
+            async with asyncio.Semaphore(self.n_jobs):
+                if is_multi:
+                    prediction = await classifier.predict_multi(example.text)
+                    is_correct = set(prediction.labels) == set(example.expected_labels)
+                    expected = example.expected_labels
+                    predicted = prediction.labels
+                else:
+                    prediction = await classifier.predict(example.text)
+                    is_correct = prediction.label == example.expected_label
+                    expected = example.expected_label
+                    predicted = prediction.label
+                    
+                return {
+                    "prediction": prediction,
+                    "is_correct": is_correct,
+                    "text": example.text,
+                    "expected": expected,
+                    "predicted": predicted
+                }
+        
+        # Create tasks
+        tasks = [_process_async(example) for example in examples]
+        
+        # Process with progress bar
+        results = await tqdm.gather(*tasks, desc="Classifying")
+        return results
+
     def run(self) -> None:
         """
         Run the evaluation process for all models and evaluation sets.
@@ -323,6 +409,7 @@ class UnifiedEvaluator:
                 f"Models: {', '.join(self.models)}\n"
                 f"Evaluation Sets: {', '.join(es.name for es in self.evaluation_sets)}\n"
                 f"Analysis: Cost & Latency, Confidence Intervals, Error Patterns\n"
+                f"Parallelism: {self.parallel_mode.capitalize()} mode with {self.n_jobs} workers\n"
                 f"Output Directory: {self.output_dir}",
                 title="[bold cyan]Classification Evaluation[/bold cyan]",
                 border_style="cyan",
@@ -390,100 +477,92 @@ class UnifiedEvaluator:
                 self.console.print(f"  - Evaluating on: {eval_set.name}")
 
                 # Filter for examples with expected_label/expected_labels
-                if eval_set.classification_type == "single":
+                is_multi = eval_set.classification_type == "multi"
+                if not is_multi:
                     valid_examples = [
                         ex for ex in eval_set.examples if ex.expected_label
                     ]
-
-                    # Run predictions with tracking
-                    predictions = []
-                    correct_count = 0
-
-                    with Progress() as progress:
-                        task = progress.add_task(
-                            f"Classifying with {model_name}", total=len(valid_examples)
-                        )
-
-                        for example in valid_examples:
-                            prediction = classifier.predict(example.text)
-                            predictions.append(prediction)
-                            if prediction.label == example.expected_label:
-                                correct_count += 1
-                            progress.update(task, advance=1)
-
-                    # Calculate accuracy
-                    accuracy = (
-                        correct_count / len(valid_examples) if valid_examples else 0
-                    )
-
-                    # Build prediction details
-                    prediction_details = []
-                    for example, pred in zip(valid_examples, predictions):
-                        prediction_details.append(
-                            {
-                                "text": example.text,
-                                "expected": example.expected_label,
-                                "predicted": pred.label,
-                            }
-                        )
-
-                    # Build result
-                    result = {
-                        "model": model_name,
-                        "eval_set_name": eval_set.name,
-                        "total_examples": len(valid_examples),
-                        "correct_predictions": correct_count,
-                        "accuracy": accuracy,
-                        "predictions": prediction_details,
-                    }
-
-                else:  # Multi-label classification
+                else:
                     valid_examples = [
                         ex for ex in eval_set.examples if ex.expected_labels
                     ]
 
-                    # Run predictions with tracking
-                    predictions = []
-                    correct_count = 0
+                # Skip if no valid examples
+                if not valid_examples:
+                    self.console.print(f"    [yellow]No valid examples found for {eval_set.name}[/yellow]")
+                    continue
 
+                # Process examples based on parallelism mode
+                if self.parallel_mode == "sync":
+                    # Sequential processing with progress bar
+                    results = []
+                    correct_count = 0
+                    
                     with Progress() as progress:
                         task = progress.add_task(
                             f"Classifying with {model_name}", total=len(valid_examples)
                         )
-
+                        
                         for example in valid_examples:
-                            prediction = classifier.predict_multi(example.text)
-                            predictions.append(prediction)
-                            # A prediction is correct if all labels match exactly
-                            if set(prediction.labels) == set(example.expected_labels):
+                            result = self._process_single_example(classifier, example, is_multi)
+                            results.append(result)
+                            if result["is_correct"]:
                                 correct_count += 1
                             progress.update(task, advance=1)
-
-                    # Calculate accuracy
-                    accuracy = (
-                        correct_count / len(valid_examples) if valid_examples else 0
+                    
+                elif self.parallel_mode == "parallel":
+                    # Thread-based parallel processing
+                    self.console.print(f"    [green]Using thread-based parallelism with {self.n_jobs} workers[/green]")
+                    results = self._process_batch_parallel(classifier, valid_examples, is_multi)
+                    correct_count = sum(1 for r in results if r["is_correct"])
+                    
+                elif self.parallel_mode == "async":
+                    # Asyncio-based parallel processing
+                    self.console.print(f"    [green]Using asyncio-based parallelism with {self.n_jobs} workers[/green]")
+                    
+                    # Need to create async classifier if not already
+                    from instructor_classify.classify import AsyncClassifier
+                    
+                    # Create async classifier with same definition
+                    async_classifier = AsyncClassifier(self.definition)
+                    
+                    # Copy model and create async client
+                    async_classifier.model_name = model_name
+                    import instructor
+                    from openai import AsyncOpenAI
+                    async_client = instructor.from_openai(AsyncOpenAI())
+                    async_classifier.with_client(async_client)
+                    
+                    # Run async processing in event loop
+                    import asyncio
+                    results = asyncio.run(
+                        self._process_batch_async(async_classifier, valid_examples, is_multi)
                     )
-
-                    # Build prediction details
-                    prediction_details = []
-                    for example, pred in zip(valid_examples, predictions):
-                        prediction_details.append(
-                            {
-                                "text": example.text,
-                                "expected": example.expected_labels,
-                                "predicted": pred.labels,
-                            }
-                        )
-
-                    # Build result
-                    result = {
-                        "model": model_name,
-                        "eval_set_name": eval_set.name,
-                        "total_examples": len(valid_examples),
-                        "correct_predictions": correct_count,
-                        "accuracy": accuracy,
-                        "predictions": prediction_details,
+                    correct_count = sum(1 for r in results if r["is_correct"])
+                
+                # Calculate accuracy
+                accuracy = correct_count / len(valid_examples) if valid_examples else 0
+                
+                # Extract prediction details
+                predictions = [r["prediction"] for r in results]
+                prediction_details = [
+                    {
+                        "text": r["text"],
+                        "expected": r["expected"],
+                        "predicted": r["predicted"],
                     }
+                    for r in results
+                ]
+
+                # Build result
+                result = {
+                    "model": model_name,
+                    "eval_set_name": eval_set.name,
+                    "total_examples": len(valid_examples),
+                    "correct_predictions": correct_count,
+                    "accuracy": accuracy,
+                    "predictions": prediction_details,
+                }
 
                 # Store results
                 self.results_by_model[model_name][eval_set.name] = result
