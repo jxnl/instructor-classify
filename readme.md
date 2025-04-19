@@ -33,13 +33,15 @@ Instructor Classify provides:
 ## Installation
 
 ```bash
-pip install instructor-classify
+git clone https://github.com/jxnl/instructor-classify.git
+cd instructor-classify
+uv sync
 ```
 
 Required dependencies:
 ```bash
-pip install instructor pydantic
-pip install openai  # Or anthropic, google-generativeai, etc.
+uv pip install instructor pydantic
+uv pip install openai  # Or anthropic, google-generativeai, etc.
 ```
 
 ## Quick Start
