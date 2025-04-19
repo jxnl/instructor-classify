@@ -80,7 +80,19 @@ def evaluate(
                 config["parallel_mode"] = parallel_mode
             if n_jobs is not None:
                 config["n_jobs"] = n_jobs
-                
+            
+            # Fix paths to be absolute before writing to a new location
+            config_dir = os.path.dirname(os.path.abspath(config_path))
+            
+            # Convert relative paths to absolute paths
+            if "definition_path" in config and not os.path.isabs(config["definition_path"]):
+                config["definition_path"] = os.path.normpath(os.path.join(config_dir, config["definition_path"]))
+            
+            if "eval_sets" in config:
+                for i, eval_set in enumerate(config["eval_sets"]):
+                    if not os.path.isabs(eval_set):
+                        config["eval_sets"][i] = os.path.normpath(os.path.join(config_dir, eval_set))
+            
             # Create a temporary config file
             import tempfile
             with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as temp:

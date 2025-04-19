@@ -273,11 +273,27 @@ class UnifiedEvaluator:
         - Setting up model configurations
         """
         # Load classification definition
+        if "definition_path" not in self.config:
+            self.console.print(
+                "[bold red]Error: No definition_path specified in config file[/bold red]"
+            )
+            sys.exit(1)
+            
         definition_path = self._resolve_path(self.config["definition_path"])
         self.console.print(
             f"[green]Loading classification definition from {definition_path}[/green]"
         )
 
+        # Check if the file exists
+        if not os.path.exists(definition_path):
+            self.console.print(
+                f"[bold red]Error: Classification definition file not found: {definition_path}[/bold red]"
+            )
+            self.console.print(
+                "[yellow]Hint: Make sure the path is correct and accessible. If using relative paths with CLI options, consider using absolute paths.[/yellow]"
+            )
+            sys.exit(1)
+            
         try:
             self.definition = ClassificationDefinition.from_yaml(definition_path)
         except Exception as e:
@@ -288,9 +304,26 @@ class UnifiedEvaluator:
 
         # Load evaluation sets
         self.console.print("[green]Loading evaluation sets...[/green]")
+        
+        if "eval_sets" not in self.config or not self.config["eval_sets"]:
+            self.console.print(
+                "[bold red]Error: No eval_sets specified in config file[/bold red]"
+            )
+            sys.exit(1)
 
         for eval_set_path in self.config["eval_sets"]:
             path = self._resolve_path(eval_set_path)
+            
+            # Check if the file exists
+            if not os.path.exists(path):
+                self.console.print(
+                    f"[yellow]Warning: Evaluation set file not found: {path}[/yellow]"
+                )
+                self.console.print(
+                    "[yellow]Hint: Make sure the path is correct and accessible. If using relative paths with CLI options, consider using absolute paths.[/yellow]"
+                )
+                continue
+                
             try:
                 eval_set = EvalSet.from_yaml(path)
                 self.evaluation_sets.append(eval_set)
