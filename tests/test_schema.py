@@ -3,7 +3,7 @@ import sys
 
 # Adding parent directory to path to import schema
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.schema import ClassificationDefinition
+from instructor_classify.schema import ClassificationDefinition
 
 
 def test_load_intent_classification_yaml():

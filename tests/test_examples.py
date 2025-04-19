@@ -1,4 +1,4 @@
-from src.schema import Examples
+from instructor_classify.schema import Examples
 
 
 def test_examples_creation():

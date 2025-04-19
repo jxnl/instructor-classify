@@ -18,12 +18,13 @@ import sys
 import argparse
 import yaml
 import json
-from typing import Any
+from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress
 from rich.table import Table
+from pydantic import BaseModel
 
 # Add parent directory to path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -36,6 +37,146 @@ from instructor_classify.schema import ClassificationDefinition, EvalSet
 
 # Import local utilities
 from instructor_classify.eval_harness.utils.analysis import BootstrapAnalyzer, CostLatencyAnalyzer, ConfusionAnalyzer
+
+
+class EvaluationResult(BaseModel):
+    """Model for storing evaluation results."""
+    model: str
+    eval_set_name: str
+    total_examples: int
+    correct_predictions: int
+    accuracy: float
+    predictions: List[Dict[str, Any]]
+
+
+def evaluate_classifier(classifier: Any, eval_set: EvalSet) -> EvaluationResult:
+    """
+    Evaluate a classifier against an evaluation set.
+    
+    Parameters
+    ----------
+    classifier : Any
+        The classifier to evaluate. Must have batch_predict() or batch_predict_multi() methods.
+    eval_set : EvalSet
+        The evaluation set to use.
+        
+    Returns
+    -------
+    EvaluationResult
+        The evaluation results.
+    """
+    # Determine if single or multi-label classification
+    is_multi = eval_set.classification_type == "multi"
+    
+    # Filter for examples with expected labels
+    if is_multi:
+        valid_examples = [ex for ex in eval_set.examples if ex.expected_labels]
+        
+        # Get predictions
+        predictions = classifier.batch_predict_multi([ex.text for ex in valid_examples])
+        
+        # Compare predictions to expected labels
+        correct_count = 0
+        prediction_details = []
+        
+        for example, pred in zip(valid_examples, predictions):
+            is_correct = set(pred.labels) == set(example.expected_labels)
+            if is_correct:
+                correct_count += 1
+                
+            prediction_details.append({
+                "text": example.text,
+                "expected": example.expected_labels,
+                "predicted": pred.labels,
+                "is_correct": is_correct
+            })
+    else:
+        # Single-label classification
+        valid_examples = [ex for ex in eval_set.examples if ex.expected_label]
+        
+        # Get predictions
+        predictions = classifier.batch_predict([ex.text for ex in valid_examples])
+        
+        # Compare predictions to expected labels
+        correct_count = 0
+        prediction_details = []
+        
+        for example, pred in zip(valid_examples, predictions):
+            is_correct = pred.label == example.expected_label
+            if is_correct:
+                correct_count += 1
+                
+            prediction_details.append({
+                "text": example.text,
+                "expected": example.expected_label,
+                "predicted": pred.label,
+                "is_correct": is_correct
+            })
+    
+    # Calculate accuracy
+    accuracy = correct_count / len(valid_examples) if valid_examples else 0
+    
+    # Create result object
+    result = EvaluationResult(
+        model=getattr(classifier, "model", "unknown"),
+        eval_set_name=eval_set.name,
+        total_examples=len(valid_examples),
+        correct_predictions=correct_count,
+        accuracy=accuracy,
+        predictions=prediction_details
+    )
+    
+    return result
+
+
+def display_evaluation_results(result: EvaluationResult) -> None:
+    """
+    Display evaluation results in a formatted table.
+    
+    Parameters
+    ----------
+    result : EvaluationResult
+        The evaluation results to display.
+    """
+    console = Console()
+    
+    # Create a summary table
+    summary_table = Table(title=f"Evaluation Results: {result.eval_set_name}")
+    summary_table.add_column("Metric", style="cyan")
+    summary_table.add_column("Value", style="green")
+    
+    summary_table.add_row("Model", result.model)
+    summary_table.add_row("Total Examples", str(result.total_examples))
+    summary_table.add_row("Correct Predictions", str(result.correct_predictions))
+    summary_table.add_row("Accuracy", f"{result.accuracy:.2%}")
+    
+    console.print(summary_table)
+    
+    # Create a detailed results table for incorrect predictions
+    if result.predictions:
+        errors_table = Table(title="Incorrect Predictions")
+        errors_table.add_column("Text", style="white", no_wrap=False)
+        errors_table.add_column("Expected", style="green")
+        errors_table.add_column("Predicted", style="red")
+        
+        # Add rows for incorrect predictions
+        for pred in result.predictions:
+            if not pred.get("is_correct", False):
+                # Truncate long texts
+                text = pred["text"]
+                if len(text) > 80:
+                    text = text[:77] + "..."
+                
+                # Format expected and predicted values
+                expected = str(pred["expected"])
+                predicted = str(pred["predicted"])
+                
+                errors_table.add_row(text, expected, predicted)
+        
+        # Only display the table if there are errors
+        if errors_table.row_count > 0:
+            console.print("\nIncorrect Predictions:")
+            console.print(errors_table)
 
 
 class UnifiedEvaluator:

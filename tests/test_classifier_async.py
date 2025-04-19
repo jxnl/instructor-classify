@@ -17,8 +17,8 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # Local imports after path adjustment
-from src.templates import AsyncClassifier  # type: ignore
-from src.schema import ClassificationDefinition  # type: ignore
+from instructor_classify.templates import AsyncClassifier  # type: ignore
+from instructor_classify.schema import ClassificationDefinition  # type: ignore
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +66,7 @@ async def test_async_predict_single_label():
 
     classifier = AsyncClassifier(definition)
     classifier.client = DummyAsyncClient(default_label="question")
+    classifier.model_name = "gpt-3.5-turbo"
 
     result = await classifier.predict("Hello, how are you?")
     assert result.label == "question"
@@ -80,6 +81,7 @@ async def test_async_batch_predict_order_and_length():
 
     classifier = AsyncClassifier(definition)
     classifier.client = DummyAsyncClient(default_label="question")
+    classifier.model_name = "gpt-3.5-turbo"
 
     texts = [
         "What's the weather today?",

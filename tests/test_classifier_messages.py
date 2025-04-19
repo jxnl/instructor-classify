@@ -8,8 +8,8 @@ parent_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-from src.templates import Classifier  # type: ignore
-from src.schema import ClassificationDefinition  # type: ignore
+from instructor_classify.templates import Classifier  # type: ignore
+from instructor_classify.schema import ClassificationDefinition  # type: ignore
 
 
 def _render_template(content: str, context: dict) -> str:

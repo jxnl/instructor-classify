@@ -23,6 +23,36 @@ class LabelDefinition(BaseModel):
 class ClassificationDefinition(BaseModel):
     system_message: str | None = None
     label_definitions: list[LabelDefinition]
+    classification_type: Literal["single", "multi"] = "single"
+    prompt_template: str = """Classify the following text into one of the specified categories.
+
+Text to classify:
+{{ text }}
+
+{% if include_examples %}
+<examples>
+{% for label, examples in examples.items() %}
+Positive examples for '{{label}}':
+{% for example in examples.positive %}
+- {{example}}
+{% endfor %}
+
+Negative examples for '{{label}}':
+{% for example in examples.negative %}
+- {{example}}
+{% endfor %}
+
+{% endfor %}
+</examples>
+{% endif %}
+
+Available labels:
+{% for label in labels %}
+- {{label}}: {{descriptions[label]}}
+{% endfor %}
+
+Classification:
+"""
 
     @model_validator(mode="after")
     def validate_unique_labels(cls, model):
