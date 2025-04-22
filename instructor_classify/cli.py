@@ -3,6 +3,7 @@ from pathlib import Path
 import shutil
 import sys
 import os
+from typing_extensions import Annotated
 
 # Add parent directory to path for imports
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -21,11 +22,9 @@ def get_template_path() -> Path:
 
 @app.command("init")
 def init(
-    project_name: str = typer.Option(
-        ...,
-        prompt="What would you like to name your project directory?",
-        help="Name of the project directory to create"
-    )
+    project_name: Annotated[
+        str, typer.Argument(help="Name of the project directory to create")
+    ],
 ):
     """Initialize a new classifier project."""
     project_dir = Path(project_name)
