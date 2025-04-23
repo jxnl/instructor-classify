@@ -122,6 +122,48 @@ async_classifier = AsyncClassifier(definition).with_client(async_client).with_mo
 results = await async_classifier.batch_predict(texts, n_jobs=10)
 ```
 
+## Programmatic Definition
+
+While YAML is convenient for version control and sharing, you can also define your classification schema programmatically in Python code. This page shows examples of creating `ClassificationDefinition` objects directly, with increasing levels of complexity.
+
+At its simplest, you can create a classification schema with just labels:
+
+```python
+from instructor_classify.schema import ClassificationDefinition, LabelDefinition
+from instructor_classify.classify import Classifier
+import instructor
+from openai import OpenAI
+
+# Create label definitions
+spam_label = LabelDefinition(
+    label="spam",
+    description="Unsolicited messages trying to sell products or scam recipients"
+)
+
+not_spam_label = LabelDefinition(
+    label="not_spam",
+    description="Legitimate messages with relevant content for the recipient"
+)
+
+# Create classification definition
+classification_def = ClassificationDefinition(
+    system_message="You are an expert spam detection system.",
+    label_definitions=[spam_label, not_spam_label]
+)
+
+# Use the classification definition with a classifier
+client = instructor.from_openai(OpenAI())
+classifier = (
+    Classifier(classification_def)
+    .with_client(client)
+    .with_model("gpt-3.5-turbo")
+)
+
+# Make a prediction
+result = classifier.predict("CLICK HERE NOW to claim your FREE iPhone 15 Pro Max! You've been selected!")
+print(f"Classification: {result.label}")  # Should output "spam"
+```
+
 ## Evaluation Framework
 
 Evaluate model performance across datasets:
