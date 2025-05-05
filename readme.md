@@ -257,7 +257,7 @@ my_classifier/
 
 ## Documentation
 
-For detailed documentation, visit our [documentation site](https://github.com/jxnl/instructor-classify/docs) or run:
+For detailed documentation, visit our [documentation site](https://jxnl.github.io/instructor-classify/) or run:
 
 ```bash
 mkdocs serve
@@ -269,7 +269,7 @@ mkdocs serve
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! See [CONTRIBUTING.md](docs/contributing.md) for guidelines.
 
 ## Good first Issue:
 
